@@ -4,12 +4,6 @@ from subprocess import Popen,PIPE
 import argparse
 from os import system
 
-#def which_test(programname):
-    #stdout,stderr=Popen("which %s" %programname,shell=True,stderr=PIPE,stdout=PIPE).communicate()
-    #if stdout=='':
-        #return False
-    #else:
-        #return True
 
 def extract_uniquely_mapped(bamin):
     query='samtools view -h -F 4 %s |grep -w "X0:i:1" > unique_%s.sam' % (bamin,bamin.split('.')[0]) 
@@ -47,7 +41,6 @@ def parse_gene_boundaries(geneboundaries):
 
 def intersect_reads_genes(readbed,genebed,outfile):
     cmd='intersectBed -wo -a %s -b %s > %s' % (readbed,genebed,outfile)
-    print 'intersect cmd', cmd
     p3=Popen(cmd,shell=True,stderr=PIPE,stdout=PIPE)
     stdout,stderr=p3.communicate()
     if p3.returncode==0:
@@ -137,14 +130,11 @@ if  __name__=="__main__":
             uniquebed='unique_'+opts.bam.split('.')[0]+'.bed'
             intersect_reads_genes(uniquebed,opts.gbed,opts.interout)
             intersect_dict=parse_intersect_to_dict(opts.interout)
-            #print intersect_dict.keys()[0],intersect_dict[intersect_dict.keys()[0]]
             filter_dict=remove_multigene_reads(intersect_dict) # removes reads that overlap with more than one gene
           
             log_handle.write('Total reads intersecting genes: %s\nTotal reads overlapping only one gene: %s\n' % (len(intersect_dict),len(filter_dict))) 
   
             gene_to_read_dict=build_gene_to_reads_dict(filter_dict)
-            print gene_to_read_dict.keys()[0],gene_to_read_dict[gene_to_read_dict.keys()[0]]
-            #print len(gene_to_read_dict)
             counts_out=open(opts.gcount,'w')
             counts_out.write('geneid\tcount\n')
             for gene in gene_to_read_dict:
@@ -153,7 +143,7 @@ if  __name__=="__main__":
             counts_out.close()
     
         else:
-            print bed_from_unique # this will print the stderr output if fucnction fails
+            print bed_from_unique 
 
 
 
