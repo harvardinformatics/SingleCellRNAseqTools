@@ -39,7 +39,7 @@ def parse_gene_boundaries(geneboundaries):
     return genes_dict
 
 
-def intersect_reads_genes(readbed,genebed,outfile,strand_enforce):
+def intersect_reads_genes(readbed,genebed,outfile):
     cmd='intersectBed -wo -a %s -b %s > %s' % (readbed,genebed,outfile)
     p3=Popen(cmd,shell=True,stderr=PIPE,stdout=PIPE)
     stdout,stderr=p3.communicate()
@@ -55,7 +55,7 @@ def enforce_strandedness(intersectbed):
     for line in fopen:
         linelist=line.strip().split()
         if linelist[5]==linelist[9]:
-            fout.write(line):
+            fout.write(line)
             strand_dict['same']+=1
         else:
             strand_dict['diff']+=1
@@ -148,7 +148,7 @@ if  __name__=="__main__":
                 enforce_strandedness(opts.interout)
                 intersect_dict=parse_intersect_to_dict('samestrand_%s' % opts.interout)
                 strandlog=open('strandconcordance_%s.metrics' % opts.bam.split('.')[0],'w')
-                strandlog.write('same:\t%s\ndiff:\t%s\n' % (intersect_dict['same'],intersect_dict['diff']0))
+                strandlog.write('same:\t%s\ndiff:\t%s\n' % (intersect_dict['same'],intersect_dict['diff']))
                 strandlog.close()
             else:
                 intersect_dict=parse_intersect_to_dict(opts.interout)
