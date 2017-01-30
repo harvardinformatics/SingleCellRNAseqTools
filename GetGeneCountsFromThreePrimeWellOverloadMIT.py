@@ -39,14 +39,28 @@ def parse_gene_boundaries(geneboundaries):
     return genes_dict
 
 
-def intersect_reads_genes(readbed,genebed,outfile):
-    cmd='intersectBed -s -wo -a %s -b %s > %s' % (readbed,genebed,outfile)
+def intersect_reads_genes(readbed,genebed,outfile,strand_enforce):
+    cmd='intersectBed -wo -a %s -b %s > %s' % (readbed,genebed,outfile)
     p3=Popen(cmd,shell=True,stderr=PIPE,stdout=PIPE)
     stdout,stderr=p3.communicate()
     if p3.returncode==0:
         return True
     else:
-        return False    
+        return False
+
+def enforce_strandedness(intersectbed):
+    strand_dict={'same':0,'diff':0}
+    fopen=open(intersectbed,'r')
+    fout=open('samestrand_'+intersectbed,'w')
+    for line in fopen:
+        linelist=line.strip().split()
+        if linelist[5]==linelist[9]:
+            fout.write(line):
+            strand_dict['same']+=1
+        else:
+            strand_dict['diff']+=1
+    return strand_dict
+   
     
 def parse_intersect_to_dict(intersectbed):
     intersect_dict=defaultdict(list)
@@ -113,6 +127,7 @@ if  __name__=="__main__":
     parser.add_argument('-3ext','--three_prime_extend',dest='threeprime',type=int,default=0,help='# of bases to extend bedtools query in 3 prime direction')
     parser.add_argument('-intout','--read_gene_intersect_out',dest='interout',type=str,help='name of file that is intersection of unique reads and gene beds')
     parser.add_argument('-count','--gene_count_table',dest='gcount',type=str,help='name of gene count table outfile')
+    parser.add_argument('-strand','--enforce_strand',dest='strand',type=bool,default=True,help='require mappings and genes be on same strand to intersect')
     opts = parser.parse_args()    
 
 
@@ -129,7 +144,15 @@ if  __name__=="__main__":
         if bed_from_unique==True:
             uniquebed='unique_'+opts.bam.split('.')[0]+'.bed'
             intersect_reads_genes(uniquebed,opts.gbed,opts.interout)
-            intersect_dict=parse_intersect_to_dict(opts.interout)
+            if opts.strand==True:
+                enforce_strandedness(opts.interout)
+                intersect_dict=parse_intersect_to_dict('samestrand_%s' % opts.interout)
+                strandlog=open('strandconcordance_%s.metrics' % opts.bam.split('.')[0],'w')
+                strandlog.write('same:\t%s\ndiff:\t%s\n' % (intersect_dict['same'],intersect_dict['diff']0))
+                strandlog.close()
+            else:
+                intersect_dict=parse_intersect_to_dict(opts.interout)
+            
             filter_dict=remove_multigene_reads(intersect_dict) # removes reads that overlap with more than one gene
           
             log_handle.write('Total reads intersecting genes: %s\nTotal reads overlapping only one gene: %s\n' % (len(intersect_dict),len(filter_dict))) 
