@@ -145,10 +145,10 @@ if  __name__=="__main__":
             uniquebed='unique_'+opts.bam.split('.')[0]+'.bed'
             intersect_reads_genes(uniquebed,opts.gbed,opts.interout)
             if opts.strand==True:
-                enforce_strandedness(opts.interout)
+                strand_enforce=enforce_strandedness(opts.interout)
                 intersect_dict=parse_intersect_to_dict('samestrand_%s' % opts.interout)
                 strandlog=open('strandconcordance_%s.metrics' % opts.bam.split('.')[0],'w')
-                strandlog.write('same:\t%s\ndiff:\t%s\n' % (intersect_dict['same'],intersect_dict['diff']))
+                strandlog.write('same:\t%s\ndiff:\t%s\n' % (strand_enforce['same'],strand_enforce['diff']))
                 strandlog.close()
             else:
                 intersect_dict=parse_intersect_to_dict(opts.interout)
