@@ -40,7 +40,7 @@ def parse_gene_boundaries(geneboundaries):
 
 
 def intersect_reads_genes(readbed,genebed,outfile):
-    cmd='intersectBed -wo -a %s -b %s > %s' % (readbed,genebed,outfile)
+    cmd='intersectBed -s -wo -a %s -b %s > %s' % (readbed,genebed,outfile)
     p3=Popen(cmd,shell=True,stderr=PIPE,stdout=PIPE)
     stdout,stderr=p3.communicate()
     if p3.returncode==0:
