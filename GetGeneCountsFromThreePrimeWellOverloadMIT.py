@@ -15,7 +15,8 @@ def extract_uniquely_mapped(bamin):
     system('cat header unique_%s.sam > wheader_unique_%s.sam' % (bamin.split('.')[0],bamin.split('.')[0]))
 
     system('samtools view -Sbh wheader_unique_%s.sam > unique_%s.bam' % (bamin.split('.')[0],bamin.split('.')[0]))
-    
+    system('rm wheader_unique_%s.sam' % bamin.split('.')[0]) 
+    system('rm unique_%s.sam' % bamin.split('.')[0])
     if p1a.returncode==0 and p1b.returncode==0:
         return True
     else:
