@@ -160,7 +160,7 @@ if  __name__=="__main__":
   
             gene_to_read_dict=build_gene_to_reads_dict(filter_dict)
             counts_out=open(opts.gcount,'w')
-            counts_out.write('geneid\tcount\n')
+            counts_out.write('geneid\t%s\n' % opts.bam.split('.')[0])
             for gene in gene_to_read_dict:
                 gene_count=extract_readcount_from_gene(gene,gene_to_read_dict)
                 counts_out.write('%s\t%s\n' % (gene,gene_count))
