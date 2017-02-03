@@ -13,7 +13,7 @@ def extract_uniquely_mapped(bamin):
     p1b=Popen(grabhead,shell=True,stderr=PIPE,stdout=PIPE)
     stdout2,stderr2=p1b.communicate()
     system('cat header unique_%s.sam > wheader_unique_%s.sam' % (bamin.split('.')[0],bamin.split('.')[0]))
-
+    system('rm header')
     system('samtools view -Sbh wheader_unique_%s.sam > unique_%s.bam' % (bamin.split('.')[0],bamin.split('.')[0]))
     system('rm wheader_unique_%s.sam' % bamin.split('.')[0]) 
     system('rm unique_%s.sam' % bamin.split('.')[0])
