@@ -2,7 +2,7 @@ from sets import Set
 from collections import defaultdict
 from subprocess import Popen,PIPE
 import argparse
-from os import system
+from os import system,path
 
 
 def extract_uniquely_mapped(bamin):
@@ -31,13 +31,17 @@ def bam2bed(bam):
     else:
         return stderr    
     
-def parse_gene_boundaries(geneboundaries):
-    genes_dict={}
+def extend_gene_boundaries(geneboundaries,numbases,outbed):
     fopen=open(geneboundaries,'r')
+    fout=open(outbed,'w')
     for line in fopen:
         chrom,start,stop,strand,id=line.strip().split()
-        genes_dict[id]=(chrom,start,stop,strand)
-    return genes_dict
+        if strand=="+":
+            stop=int(stop)+numbases
+        else:
+            start=int(start)-numbases
+        fout.write('%s\t%s\t%s\t%s\t%s\n' % (chrom,start,stop,strand,id))
+    fout.close()
 
 
 def intersect_reads_genes(readbed,genebed,outfile):
@@ -50,6 +54,12 @@ def intersect_reads_genes(readbed,genebed,outfile):
         return False
 
 def enforce_strandedness(intersectbed):
+    """
+    takes a bed file of intersections between
+    read bed and gene boundary bed files
+    and filters out entries where the read mapping
+    and gene are on different strands.
+    """ 
     strand_dict={'same':0,'diff':0}
     fopen=open(intersectbed,'r')
     fout=open('samestrand_'+intersectbed,'w')
@@ -60,10 +70,20 @@ def enforce_strandedness(intersectbed):
             strand_dict['same']+=1
         else:
             strand_dict['diff']+=1
+    
+    fout.close()
     return strand_dict
    
     
 def parse_intersect_to_dict(intersectbed):
+    """
+    convert the bed file resulting from intersectbed
+    between uniquely mapping reads bed and gene
+    boundaries into a dictionary with read id/umi
+    combinations as keys, and values are dictionaries
+    for each line in the bed file associated with that
+    read id/umi combo
+    """
     intersect_dict=defaultdict(list)
     bedin=open(intersectbed,'r')
     for line in bedin:
@@ -91,6 +111,12 @@ def parse_intersect_to_dict(intersectbed):
     return intersect_dict
 
 def remove_multigene_reads(intersection_dictionary):
+    """
+    removes reads for which intersect bed operation with
+    gene boundaries yields > 1 gene, to remove erroneous
+    gene assignments in ambiguous cases
+    """
+
     filtered_dict=defaultdict(list)
     for key in intersection_dictionary.keys():
         if len(intersection_dictionary[key])>1:
@@ -134,9 +160,15 @@ if  __name__=="__main__":
 
     # open stats log #
     log_handle=open('%s.log' % opts.bam.split('.')[0],'w3')
-    # make gene boundaries dictionary #
-    gene_boundaries=parse_gene_boundaries(opts.gbed)
+
+    # extend 3' utr boundaries if argument invoked
+    if opts.threeprime>0:
+        geneboundaries='extendby%sbp_%s' % (opts.threeprime,path.basename(opts.gbed))
+        extend_gene_boundaries(opts.gbed,opts.threeprime,geneboundaries)
+    else:
+        geneboundaries=opts.gbed    
     
+
     # create uniquely mapped reads bam #
     unique_extract=extract_uniquely_mapped(opts.bam)
     if unique_extract==True:
@@ -144,7 +176,7 @@ if  __name__=="__main__":
         bed_from_unique=bam2bed(uniquebam)
         if bed_from_unique==True:
             uniquebed='unique_'+opts.bam.split('.')[0]+'.bed'
-            intersect_reads_genes(uniquebed,opts.gbed,opts.interout)
+            intersect_reads_genes(uniquebed,geneboundaries,opts.interout)
             if opts.strand==True:
                 strand_enforce=enforce_strandedness(opts.interout)
                 intersect_dict=parse_intersect_to_dict('samestrand_%s' % opts.interout)
@@ -161,7 +193,9 @@ if  __name__=="__main__":
             gene_to_read_dict=build_gene_to_reads_dict(filter_dict)
             counts_out=open(opts.gcount,'w')
             counts_out.write('geneid\t%s\n' % opts.bam.split('.')[0])
-            for gene in gene_to_read_dict:
+            genekeys=gene_to_read_dict.keys()
+            genekeys.sort()
+            for gene in genekeys:
                 gene_count=extract_readcount_from_gene(gene,gene_to_read_dict)
                 counts_out.write('%s\t%s\n' % (gene,gene_count))
             counts_out.close()
