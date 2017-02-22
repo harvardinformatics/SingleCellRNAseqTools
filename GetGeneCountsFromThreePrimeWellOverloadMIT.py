@@ -39,7 +39,7 @@ def extend_gene_boundaries(geneboundaries,numbases,outbed):
         if strand=="+":
             stop=int(stop)+numbases
         else:
-            start=int(start)-numbases
+            start=max(0,int(start)-numbases)
         fout.write('%s\t%s\t%s\t%s\t%s\n' % (chrom,start,stop,strand,id))
     fout.close()
 
