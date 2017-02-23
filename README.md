@@ -39,14 +39,14 @@ The next step is to use GetGeneCountsFromThreePrimeWellOverloadMIT.py to extract
 
 * -gbed		bed file of gene boundaries, which can be created, for example, by extracting the chromosome,start position, end position, and gene id from a gtf or gff annotation file using your unix parser of choice (awk,sed, etc.)
 
-*-3ext		number of bases to extend the 3' gene boundaries (default = 0)
+* -3ext		number of bases to extend the 3' gene boundaries (default = 0)
 
-*-intout	name of output bedfile representing the intersection between uniquely mapped reads and gene boundaries
+* -intout	name of output bedfile representing the intersection between uniquely mapped reads and gene boundaries
 
-*-count		name of output count table    
+* -count		name of output count table    
 
-*-strand	whether to enforce that alignments and genes be on the same strand; default is True, as the Soumillion et al. protocol is strand specific. But in principle, this script could be adapted for libraries that are not stranded.
+* -strand	whether to enforce that alignments and genes be on the same strand; default is True, as the Soumillion et al. protocol is strand specific. But in principle, this script could be adapted for libraries that are not stranded.
 
-USAGE: python GetGeneCountsFromThreePrimeWellOverloadMIT.py -bam <alignment.bam> -gbed <geneboundaries.bed> -3ext <integer> -intout <intersect.bed> -count <counts.table>
+USAGE: python GetGeneCountsFromThreePrimeWellOverloadMIT.py -bam \<alignment.bam\> -gbed \<geneboundaries.bed\> -3ext \<integer\> -intout \<intersect.bed\> -count \<counts.table\>
 
 
