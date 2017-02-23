@@ -5,7 +5,7 @@ For some experiments, there is an interest in understanding expression variation
 
 The first step is to map single-end reads with bwa. Once you have created a bwa genome index for the reference genome, a SLURM job submission script to Harvard's Odyssey cluster with two cmd line arguments (path to indexed reference fasta and fastq read file) would look something like this:
 
-    :bash
+    :::bash
     #!/bin/bash
     #SBATCH -N 1
     #SBATCH -n 8
